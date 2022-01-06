@@ -1,0 +1,976 @@
+<# 
+.NAME
+    Duo Setup Tool - JM 12/24/2021
+#>
+
+
+Add-Type -Name Window -Namespace Console -MemberDefinition '
+[DllImport("Kernel32.dll")]
+public static extern IntPtr GetConsoleWindow();
+
+[DllImport("user32.dll")]
+public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);'
+
+[Console.Window]::ShowWindow([Console.Window]::GetConsoleWindow(), 0)
+
+$Date                                     = Get-Date
+$CheckEvent = Get-EventLog -LogName Application -Source *ScreenConnect* -Newest 1 -EntryType Information
+$CheckEvent | Select-Object -Property *
+$GetEventProperties = $CheckEvent | Select-Object -Property *
+$CleanupMessage = $GetEventProperties.Message
+$ConnectWiseUser = $CleanupMessage.replace(' Connected','')
+
+
+#######################################################################################################
+# COLUMN 1
+#######################################################################################################
+
+
+$FormDuoSetupTool                         = New-Object system.Windows.Forms.Form
+$FormDuoSetupTool.ClientSize              = New-Object System.Drawing.Point(1176,798)
+$FormDuoSetupTool.text                    = "Duo Setup Tool For Help Desk Dummies - Version 4.206.66"
+$FormDuoSetupTool.TopMost                 = $false
+$FormDuoSetupTool.SizeGripStyle           = 2
+$FormDuoSetupTool.MaximizeBox             = $false
+$FormDuoSetupTool.ControlBox              = $true
+$FormDuoSetupTool.FormBorderStyle         = 'Fixed3D'
+$FormDuoSetupTool.HelpButton              = $true
+
+
+$LabelEnterYourName                       = New-Object system.Windows.Forms.Label
+$LabelEnterYourName.text                  = "Your Name"
+$LabelEnterYourName.AutoSize              = $true
+$LabelEnterYourName.width                 = 25
+$LabelEnterYourName.height                = 10
+$LabelEnterYourName.location              = New-Object System.Drawing.Point(19,40)
+$LabelEnterYourName.Font                  = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelEnterYourName)
+
+
+$TextBoxYourName                          = New-Object system.Windows.Forms.TextBox
+$TextBoxYourName.Text                     = $ConnectWiseUser
+$TextBoxYourName.multiline                = $false
+$TextBoxYourName.width                    = 223
+$TextBoxYourName.height                   = 20
+$TextBoxYourName.location                 = New-Object System.Drawing.Point(19,62)
+$TextBoxYourName.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Italic))
+$TextBoxYourName.TabIndex                 = 1
+$FormDuoSetupTool.Controls.Add($TextBoxYourName)
+
+
+$LabelTicketNumber                        = New-Object system.Windows.Forms.Label
+$LabelTicketNumber.AutoSize               = $true
+$LabelTicketNumber.Text                   = "Ticket or Project #"
+$LabelTicketNumber.width                  = 25
+$LabelTicketNumber.height                 = 10
+$LabelTicketNumber.location               = New-Object System.Drawing.Point(19,97)
+$LabelTicketNumber.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelTicketNumber)
+
+
+$TextBoxTicketNumber                      = New-Object system.Windows.Forms.TextBox
+$TextBoxTicketNumber.multiline            = $false
+$TextBoxTicketNumber.width                = 223
+$TextBoxTicketNumber.height               = 20
+$TextBoxTicketNumber.location             = New-Object System.Drawing.Point(19,124)
+$TextBoxTicketNumber.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Italic))
+$TextBoxTicketNumber.TabIndex             = 2
+$FormDuoSetupTool.Controls.Add($TextBoxTicketNumber)
+
+$LabelKeyWarning                             = New-Object system.Windows.Forms.Label
+$LabelKeyWarning.text                        = "!!USE CORRECT KEYS!!"
+$LabelKeyWarning.AutoSize                    = $true
+$LabelKeyWarning.width                       = 25
+$LabelKeyWarning.height                      = 10
+$LabelKeyWarning.location                    = New-Object System.Drawing.Point(19,190)
+$LabelKeyWarning.Font                        = New-Object System.Drawing.Font('Microsoft Sans Serif',7,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$LabelWorkstationInstall.ForeColor       = [System.Drawing.ColorTranslator]::FromHtml("#b11111")
+$FormDuoSetupTool.Controls.Add($LabelKeyWarning)
+
+$LabelKeyWarningInfo                             = New-Object system.Windows.Forms.Label
+$LabelKeyWarningInfo.text                        = "Keys need to be switchedd after Step 2."
+$LabelKeyWarningInfo.AutoSize                    = $true
+$LabelKeyWarningInfo.width                       = 25
+$LabelKeyWarningInfo.height                      = 10
+$LabelKeyWarningInfo.location                    = New-Object System.Drawing.Point(19,205)
+$LabelKeyWarningInfo.Font                        = New-Object System.Drawing.Font('Microsoft Sans Serif',7,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Italic))
+$LabelWorkstationInstall.ForeColor       = [System.Drawing.ColorTranslator]::FromHtml("#b11111")
+$FormDuoSetupTool.Controls.Add($LabelKeyWarningInfo)
+
+$LabelAPIHost                             = New-Object system.Windows.Forms.Label
+$LabelAPIHost.text                        = "API Hostname"
+$LabelAPIHost.AutoSize                    = $true
+$LabelAPIHost.width                       = 25
+$LabelAPIHost.height                      = 10
+$LabelAPIHost.location                    = New-Object System.Drawing.Point(19,233)
+$LabelAPIHost.Font                        = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelAPIHost)
+
+
+$TextBoxAPIHost                           = New-Object system.Windows.Forms.TextBox
+$TextBoxAPIHost.multiline                 = $false
+$TextBoxAPIHost.width                     = 222
+$TextBoxAPIHost.height                    = 20
+$TextBoxAPIHost.location                  = New-Object System.Drawing.Point(19,262)
+$TextBoxAPIHost.Font                      = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+$TextBoxAPIHost.TabIndex                  = 3
+$Duo_HOST_Count                           = $TextBoxAPIHost.TextLength
+$FormDuoSetupTool.Controls.Add($TextBoxAPIHost)
+
+
+$LabelIKEY                                = New-Object system.Windows.Forms.Label
+$LabelIKEY.text                           = "Integration Key"
+$LabelIKEY.AutoSize                       = $true
+$LabelIKEY.width                          = 25
+$LabelIKEY.height                         = 10
+$LabelIKEY.location                       = New-Object System.Drawing.Point(19,299)
+$LabelIKEY.Font                           = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelIKEY)
+
+
+$TextBoxIKEY                              = New-Object system.Windows.Forms.TextBox
+$TextBoxIKEY.multiline                    = $false
+$TextBoxIKEY.width                        = 222
+$TextBoxIKEY.height                       = 20
+$TextBoxIKEY.location                     = New-Object System.Drawing.Point(19,329)
+$TextBoxIKEY.Font                         = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+$TextBoxIKEY.TabIndex                     = 4
+$Duo_IKEY_Count                           = $TextBoxIKEY.TextLength
+$FormDuoSetupTool.Controls.Add($TextBoxIKEY)
+
+
+$LabelSKey                                = New-Object system.Windows.Forms.Label
+$LabelSKey.text                           = "Secret Key"
+$LabelSKey.AutoSize                       = $true
+$LabelSKey.width                          = 25
+$LabelSKey.height                         = 10
+$LabelSKey.location                       = New-Object System.Drawing.Point(19,365)
+$LabelSKey.Font                           = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelSKey)
+
+
+$TextBoxSKey                              = New-Object system.Windows.Forms.TextBox
+$TextBoxSKey.multiline                    = $false
+$TextBoxSKey.width                        = 222
+$TextBoxSKey.height                       = 20
+$TextBoxSKey.location                     = New-Object System.Drawing.Point(19,391)
+$TextBoxSKey.Font                         = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+$TextBoxSKey.TabIndex                     = 5
+$Duo_SKEY_Count                           = $TextBoxSKey.TextLength
+$FormDuoSetupTool.Controls.Add($TextBoxSKey)
+
+
+$LabelDistNameGroups                      = New-Object system.Windows.Forms.Label
+$LabelDistNameGroups.text                 = "Distinguished Name of Groups OU"
+$LabelDistNameGroups.AutoSize             = $true
+$LabelDistNameGroups.width                = 25
+$LabelDistNameGroups.height               = 10
+$LabelDistNameGroups.location             = New-Object System.Drawing.Point(19,425)
+$LabelDistNameGroups.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelDistNameGroups)
+
+
+$TextBoxDistNameGroups                    = New-Object system.Windows.Forms.TextBox
+$TextBoxDistNameGroups.multiline          = $false
+$TextBoxDistNameGroups.width              = 222
+$TextBoxDistNameGroups.height             = 20
+$TextBoxDistNameGroups.location           = New-Object System.Drawing.Point(19,442)
+$TextBoxDistNameGroups.Font               = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+$TextBoxDistNameGroups.TabIndex           = 6
+$GroupPath                                = $TextBoxDistNameGroups.Text
+$GroupPath_Count                          = $TextBoxDistNameGroups.TextLength
+$FormDuoSetupTool.Controls.Add($TextBoxDistNameGroups)
+
+
+$LabelEmailDomain                         = New-Object system.Windows.Forms.Label
+$LabelEmailDomain.text                    = "E-Mail Domain - Include `'@`'"
+$LabelEmailDomain.AutoSize                = $true
+$LabelEmailDomain.width                   = 25
+$LabelEmailDomain.height                  = 10
+$LabelEmailDomain.location                = New-Object System.Drawing.Point(19,475)
+$LabelEmailDomain.Font                    = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelEmailDomain)
+
+
+$TextBoxEmailDomain                       = New-Object system.Windows.Forms.TextBox
+$TextBoxEmailDomain.multiline             = $false
+$TextBoxEmailDomain.width                 = 222
+$TextBoxEmailDomain.height                = 20
+$TextBoxEmailDomain.location              = New-Object System.Drawing.Point(19,494)
+$TextBoxEmailDomain.Font                  = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+$TextBoxEmailDomain.TabIndex              = 7
+$EmailDomain                              = $TextBoxEmailDomain.Text
+$EmailDomain_Count                        = $TextBoxEmailDomain.TextLength
+$FormDuoSetupTool.Controls.Add($TextBoxEmailDomain)
+
+
+$LabelEmailFormat                         = New-Object system.Windows.Forms.Label
+$LabelEmailFormat.text                    = "E-Mail Address Format"
+$LabelEmailFormat.AutoSize                = $true
+$LabelEmailFormat.width                   = 25
+$LabelEmailFormat.height                  = 10
+$LabelEmailFormat.location                = New-Object System.Drawing.Point(19,546)
+$LabelEmailFormat.Font                    = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelEmailFormat)
+
+
+$LabelEmailFormatInfoExamples             = New-Object system.Windows.Forms.Label
+$LabelEmailFormatInfoExamples.text        = "Example Name Cookie Monster"
+$LabelEmailFormatInfoExamples.AutoSize    = $true
+$LabelEmailFormatInfoExamples.width       = 25
+$LabelEmailFormatInfoExamples.height      = 10
+$LabelEmailFormatInfoExamples.location    = New-Object System.Drawing.Point(19,566)
+$LabelEmailFormatInfoExamples.Font        = New-Object System.Drawing.Font('Microsoft Sans Serif',8,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Italic))
+$FormDuoSetupTool.Controls.Add($LabelEmailFormatInfoExamples)
+
+
+$ListBoxEmailFormatOptions                = New-Object system.Windows.Forms.ListBox
+$ListBoxEmailFormatOptions.text           = "listBoxEmailFormatOptions"
+$ListBoxEmailFormatOptions.width          = 223
+$ListBoxEmailFormatOptions.height         = 123
+@('1-Cookie.Monster','2-CMonster','3-Cookie','4-MonsterC') | ForEach-Object {[void] $ListBoxEmailFormatOptions.Items.Add($_)}
+$FormDuoSetupTool.Controls.Add($ListBoxEmailFormatOptions)
+
+
+$ListBoxEmailFormatOptions.location       = New-Object System.Drawing.Point(19,584)
+$EmailAddressOptions                      = $ListBoxEmailFormatOptions.SelectedItem
+$ListBoxEmailFormatOptions.TabIndex       = 8
+
+
+
+##########################################################################################################
+# COLUMN 2
+##########################################################################################################
+
+
+
+$ListViewOnlineServers                      = New-Object System.Windows.Forms.TextBox
+$ListViewOnlineServers.Multiline            = $true
+$ListViewOnlineServers.ForeColor            = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$ListViewOnlineServers.BackColor            = [System.Drawing.ColorTranslator]::FromHtml("#05448f")
+$ListViewOnlineServers.width                = 266
+$ListViewOnlineServers.height               = 250
+$ListViewOnlineServers.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',9)
+$ListViewOnlineServers.location             = New-Object System.Drawing.Point(269,33)
+$ListViewOnlineServers.TabIndex             = 9
+$ListViewOnlineServers.AutoSize             = $true
+$ListViewOnlineServers.ScrollBars           = "Vertical"
+$ListViewOnlineServers.Anchor               = 'top,right,bottom,left'
+$ListViewOnlineServers.AcceptsReturn        = $true
+$ListViewOnlineServers.AcceptsTab           = $true
+$ListViewOnlineServers.AutoScrollOffset     = 1
+$FormDuoSetupTool.Controls.Add($ListViewOnlineServers)
+
+
+
+$ListViewOnlineWorkstations                 = New-Object System.Windows.Forms.TextBox
+$ListViewOnlineWorkstations.Multiline       = $true
+$ListViewOnlineWorkstations.ForeColor       = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$ListViewOnlineWorkstations.BackColor       = [System.Drawing.ColorTranslator]::FromHtml("#05448f")
+$ListViewOnlineWorkstations.width           = 266
+$ListViewOnlineWorkstations.height          = 250
+$ListViewOnlineWorkstations.Font            = New-Object System.Drawing.Font('Microsoft Sans Serif',9)
+$ListViewOnlineWorkstations.location        = New-Object System.Drawing.Point(570,33)
+$ListViewOnlineWorkstations.TabIndex        = 10
+$ListViewOnlineWorkstations.AutoSize        = $true
+$ListViewOnlineWorkstations.ScrollBars      = "Vertical"
+$ListViewOnlineWorkstations.Anchor          = 'top,right,bottom,left'
+$ListViewOnlineWorkstations.AcceptsReturn   = $true
+$ListViewOnlineWorkstations.AcceptsTab      = $true
+$ListViewOnlineWorkstations.AutoScrollOffset= 1
+$FormDuoSetupTool.Controls.Add($ListViewOnlineWorkstations)
+
+
+$ButtonListOnlineServers                    = New-Object system.Windows.Forms.Button
+$ButtonListOnlineServers.text               = "Gather Servers - Enabled Only"
+$ButtonListOnlineServers.width              = 266
+$ButtonListOnlineServers.height             = 22
+$ButtonListOnlineServers.location           = New-Object System.Drawing.Point(270,294)
+$ButtonListOnlineServers.Font               = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonListOnlineServers.TabIndex           = 11
+$ButtonListOnlineServers.Add_Click({ Gather-OnlineServers })
+$FormDuoSetupTool.Controls.Add($ButtonListOnlineServers)
+
+
+$ButtonListOnlineWorkstations               = New-Object system.Windows.Forms.Button
+$ButtonListOnlineWorkstations.text          = "Gather Workstations - Enabled Only"
+$ButtonListOnlineWorkstations.width         = 266
+$ButtonListOnlineWorkstations.height        = 22
+$ButtonListOnlineWorkstations.location      = New-Object System.Drawing.Point(571,292)
+$ButtonListOnlineWorkstations.Font          = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonListOnlineWorkstations.TabIndex      = 12
+$ButtonListOnlineWorkstations.Add_Click({ Gather-OnlineWorkstations })
+$FormDuoSetupTool.Controls.Add($ButtonListOnlineWorkstations)
+
+
+$ButtonSetupDuoProxy                        = New-Object system.Windows.Forms.Button
+$ButtonSetupDuoProxy.text                   = "Step 1. Install Duo Proxy"
+$ButtonSetupDuoProxy.width                  = 221
+$ButtonSetupDuoProxy.height                 = 33
+$ButtonSetupDuoProxy.location               = New-Object System.Drawing.Point(287,340)
+$ButtonSetupDuoProxy.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonSetupDuoProxy.TabIndex               = 13
+$ButtonSetupDuoProxy.Add_MouseClick({ Install-DuoProxy })
+$FormDuoSetupTool.Controls.Add($ButtonSetupDuoProxy)
+
+
+$ButtonConfigureProxy                       = New-Object system.Windows.Forms.Button
+$ButtonConfigureProxy.text                  = "Step 2. Configure Duo Proxy"
+$ButtonConfigureProxy.width                 = 221
+$ButtonConfigureProxy.height                = 33
+$ButtonConfigureProxy.location              = New-Object System.Drawing.Point(579,340)
+$ButtonConfigureProxy.Font                  = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonConfigureProxy.TabIndex              = 14
+$ButtonConfigureProxy.Add_MouseClick({ Configure-DuoProxy })
+$FormDuoSetupTool.Controls.Add($ButtonConfigureProxy)
+
+
+$ButtonUpdateActiveUserEmail                = New-Object system.Windows.Forms.Button
+$ButtonUpdateActiveUserEmail.text           = "Step 3. Update E-Mail for Users"
+$ButtonUpdateActiveUserEmail.width          = 221
+$ButtonUpdateActiveUserEmail.height         = 33
+$ButtonUpdateActiveUserEmail.location       = New-Object System.Drawing.Point(287,397)
+$ButtonUpdateActiveUserEmail.Font           = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonUpdateActiveUserEmail.TabIndex       = 15
+$ButtonUpdateActiveUserEmail.Add_Click({ Update-EmailAddresses })
+$FormDuoSetupTool.Controls.Add($ButtonUpdateActiveUserEmail)
+
+
+$ButtonMakeOnlineGroupAdd                   = New-Object system.Windows.Forms.Button
+$ButtonMakeOnlineGroupAdd.text              = "Step 4. Make Groups & Add Online Users"
+$ButtonMakeOnlineGroupAdd.width             = 221
+$ButtonMakeOnlineGroupAdd.height            = 33
+$ButtonMakeOnlineGroupAdd.location          = New-Object System.Drawing.Point(579,396)
+$ButtonMakeOnlineGroupAdd.Font              = New-Object System.Drawing.Font('Microsoft Sans Serif',8,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonMakeOnlineGroupAdd.TabIndex          = 16
+$ButtonMakeOnlineGroupAdd.Add_Click({ Make-DuoGroupsAddOnlineUsers })
+$FormDuoSetupTool.Controls.Add($ButtonMakeOnlineGroupAdd)
+
+
+###########################################################################################################
+# COLUMN 3
+###########################################################################################################
+
+$ListViewDuoGroupMembers                 = New-Object System.Windows.Forms.TextBox
+$ListViewDuoGroupMembers.Multiline       = $true
+$ListViewDuoGroupMembers.ForeColor       = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$ListViewDuoGroupMembers.BackColor       = [System.Drawing.ColorTranslator]::FromHtml("#05448f")
+$ListViewDuoGroupMembers.width           = 266
+$ListViewDuoGroupMembers.height          = 250
+$ListViewDuoGroupMembers.Font            = New-Object System.Drawing.Font('Microsoft Sans Serif',9)
+$ListViewDuoGroupMembers.location        = New-Object System.Drawing.Point(882,33)
+$ListViewDuoGroupMembers.TabIndex        = 10
+$ListViewDuoGroupMembers.AutoSize        = $true
+$ListViewDuoGroupMembers.ScrollBars      = "Vertical"
+$ListViewDuoGroupMembers.Anchor          = 'top,right,bottom,left'
+$ListViewDuoGroupMembers.AcceptsReturn   = $true
+$ListViewDuoGroupMembers.AcceptsTab      = $true
+$ListViewDuoGroupMembers.AutoScrollOffset= 1
+$FormDuoSetupTool.Controls.Add($ListViewDuoGroupMembers)
+$FormDuoSetupTool.Controls.Add($ListViewDuoGroupMembers)
+
+
+$ButtonListDuoGroupMembers               = New-Object system.Windows.Forms.Button
+$ButtonListDuoGroupMembers.text          = "Check Duo Group Members"
+$ButtonListDuoGroupMembers.width         = 266
+$ButtonListDuoGroupMembers.height        = 22
+$ButtonListDuoGroupMembers.location      = New-Object System.Drawing.Point(880,292)
+$ButtonListDuoGroupMembers.Font          = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonListDuoGroupMembers.TabIndex      = 12
+$ButtonListDuoGroupMembers.Add_Click({ Check-DuoGroups })
+$FormDuoSetupTool.Controls.Add($ButtonListDuoGroupMembers)
+
+
+$LabelDeployToMachines                   = New-Object system.Windows.Forms.Label
+$LabelDeployToMachines.text              = "Test Login after deploying"
+$LabelDeployToMachines.ForeColor         = [System.Drawing.ColorTranslator]::FromHtml("#b11111")
+$LabelDeployToMachines.AutoSize          = $true
+$LabelDeployToMachines.width             = 25
+$LabelDeployToMachines.height            = 10
+$LabelDeployToMachines.Anchor            = 'top,right,left'
+$LabelDeployToMachines.location          = New-Object System.Drawing.Point(910,395)
+$LabelDeployToMachines.Font              = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$FormDuoSetupTool.Controls.Add($LabelDeployToMachines)
+
+
+$ButtonInstallOnServers                  = New-Object system.Windows.Forms.Button
+$ButtonInstallOnServers.text             = "Servers - Install Duo Client"
+$ButtonInstallOnServers.width            = 202
+$ButtonInstallOnServers.height           = 44
+$ButtonInstallOnServers.location         = New-Object System.Drawing.Point(907,425)
+$ButtonInstallOnServers.Font             = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonInstallOnServers.BackColor        = [System.Drawing.ColorTranslator]::FromHtml("#50e3c2")
+$ButtonInstallOnServers.TabIndex         = 17
+$ButtonInstallOnServers.Add_Click({ Install-OnServers })
+$FormDuoSetupTool.Controls.Add($ButtonInstallOnServers)
+
+
+$LabelOfflineGroupWarning                = New-Object system.Windows.Forms.Label
+$LabelOfflineGroupWarning.text           = "Only use this AFTER enrollment"
+$LabelOfflineGroupWarning.AutoSize       = $true
+$LabelOfflineGroupWarning.width          = 25
+$LabelOfflineGroupWarning.height         = 10
+$LabelOfflineGroupWarning.location       = New-Object System.Drawing.Point(910,489)
+$LabelOfflineGroupWarning.Font           = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$LabelOfflineGroupWarning.ForeColor      = [System.Drawing.ColorTranslator]::FromHtml("#b11111")
+$FormDuoSetupTool.Controls.Add($LabelOfflineGroupWarning)
+
+
+$ButtonPostEnrollment                    = New-Object system.Windows.Forms.Button
+$ButtonPostEnrollment.text               = "Add Users to Offline Group"
+$ButtonPostEnrollment.width              = 202
+$ButtonPostEnrollment.height             = 44
+$ButtonPostEnrollment.location           = New-Object System.Drawing.Point(905,513)
+$ButtonPostEnrollment.Font               = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonPostEnrollment.ForeColor          = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$ButtonPostEnrollment.BackColor          = [System.Drawing.ColorTranslator]::FromHtml("#737b79")
+$ButtonPostEnrollment.TabIndex           = 18
+$ButtonPostEnrollment.Add_Click({ Add-DuoOfflineUsers })
+$FormDuoSetupTool.Controls.Add($ButtonPostEnrollment)
+
+
+$LabelWorkstationInstall                 = New-Object system.Windows.Forms.Label
+$LabelWorkstationInstall.text            = "!!TEST LOGIN PROMPT FIRST!!"
+$LabelWorkstationInstall.AutoSize        = $true
+$LabelWorkstationInstall.width           = 25
+$LabelWorkstationInstall.height          = 10
+$LabelWorkstationInstall.location        = New-Object System.Drawing.Point(906,580)
+$LabelWorkstationInstall.Font            = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$LabelWorkstationInstall.ForeColor       = [System.Drawing.ColorTranslator]::FromHtml("#990808")
+$FormDuoSetupTool.Controls.Add($LabelWorkstationInstall)
+
+
+$ButtonInstallOnWorkstations             = New-Object system.Windows.Forms.Button
+$ButtonInstallOnWorkstations.text        = "Workstations - Install Duo Client"
+$ButtonInstallOnWorkstations.width       = 202
+$ButtonInstallOnWorkstations.height      = 44
+$ButtonInstallOnWorkstations.location    = New-Object System.Drawing.Point(905,609)
+$ButtonInstallOnWorkstations.Font        = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonInstallOnWorkstations.ForeColor   = [System.Drawing.ColorTranslator]::FromHtml("#000000")
+$ButtonInstallOnWorkstations.BackColor   = [System.Drawing.ColorTranslator]::FromHtml("#50e3c2")
+$ButtonInstallOnWorkstations.TabIndex    = 19
+$ButtonInstallOnWorkstations.Add_Click({ Install-OnWorkstation })
+$FormDuoSetupTool.Controls.Add($ButtonInstallOnWorkstations)
+
+
+$ButtonDoItForYou                        = New-Object system.Windows.Forms.Button
+$ButtonDoItForYou.text                   = "Duo - Easy Button"
+$ButtonDoItForYou.width                  = 202
+$ButtonDoItForYou.height                 = 44
+$ButtonDoItForYou.location               = New-Object System.Drawing.Point(905,683)
+$ButtonDoItForYou.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',10,[System.Drawing.FontStyle]([System.Drawing.FontStyle]::Bold))
+$ButtonDoItForYou.ForeColor              = [System.Drawing.ColorTranslator]::FromHtml("#000000")
+$ButtonDoItForYou.BackColor              = [System.Drawing.ColorTranslator]::FromHtml("#50e3c2")
+$ButtonDoItForYou.TabIndex               = 20
+$ButtonDoItForYou.Add_Click({ Initiate-RickRoll })
+$FormDuoSetupTool.Controls.Add($ButtonDoItForYou)
+
+
+#############################################################################################################
+
+
+
+$ErrorProvider1                    = New-Object system.Windows.Forms.ErrorProvider
+
+
+$ToolTipSureDid                    = New-Object system.Windows.Forms.ToolTip
+$ToolTipSureDid.ToolTipTitle       = "Answer:"
+$ToolTipSureDid.isBalloon          = $true
+
+
+$ToolTipGetToWork                  = New-Object system.Windows.Forms.ToolTip
+$ToolTipGetToWork.ToolTipTitle     = "Hey"
+$ToolTipGetToWork.isBalloon        = $true
+
+
+$ToolTipGroupOU                    = New-Object system.Windows.Forms.ToolTip
+$ToolTipGroupOU.ToolTipTitle       = "Example - DC=AegisBizTech,DC=COM"
+$ToolTipGroupOU.isBalloon          = $true
+$ToolTipGroupOU.AutomaticDelay     = 100
+$ToolTipGroupOU.AutoPopDelay       = 20000
+
+
+$Output                            = New-Object system.Windows.Forms.TextBox
+$Output.multiline                  = $true
+$Output.Scrollbars	               = "Vertical" 
+$Output.width                      = 567
+$Output.height                     = 247
+$Output.Anchor                     = 'top,right,bottom,left'
+$Output.location                   = New-Object System.Drawing.Point(270,460)
+$Output.Font                       = New-Object System.Drawing.Font('Microsoft Sans Serif',9)
+$Output.ForeColor                  = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$Output.BackColor                  = [System.Drawing.ColorTranslator]::FromHtml("#05448f")
+$Output.AcceptsReturn              = $true
+$Output.AcceptsTab                 = $true
+$Output.AutoScrollOffset           = 1
+$FormDuoSetupTool.Controls.Add($Output)
+
+
+$ToolTipGetToWork.SetToolTip($FormDuoSetupTool,'Stop touching me')
+
+$ToolTipGroupOU.SetToolTip($LabelDistNameGroups,'OR DC=HasTheLargeHadronColliderDestroyedTheWorldYet,DC=COM')
+$ToolTipGroupOU.SetToolTip($TextBoxDistNameGroups,'OR DC=HasTheLargeHadronColliderDestroyedTheWorldYet,DC=COM')
+
+$ToolTipSureDid.SetToolTip($LabelWorkstationInstall,"Yup, sure did.")
+
+#$FormDuoSetupTool.controls.AddRange(@($ListViewDuoGroupMembers,$ButtonListDuoGroupMembers,$LabelEnterYourName,$LabelTicketNumber,$TextBoxIKEY,$TextBoxIKEY,$TextBoxDistNameGroups,$TextBoxSKey,$TextBoxEmailDomain,$LabelEmailFormat,$LabelAPIHost,$Label3,$LabelSKey,$LabelDistNameGroups,$LabelEmailDomain,$LabelIKEY,$TextBoxAPIHost,$TextBoxAPIHost,$ListBoxEmailFormatOptions,$LabelEmailFormatInfoExamples,$ButtonSetupDuoProxy,$ListViewOnlineServers,$ButtonListOnlineServers,$ListViewOnlineWorkstations,$ButtonListOnlineWorkstations,$ButtonConfigureProxy,$LabelDeployToMachines,$ButtonUpdateActiveUserEmail,$ButtonInstallOnServers,$ButtonInstallOnWorkstations,$ButtonDoItForYou,$LabelWorkstationInstall,$ButtonMakeOnlineGroupAdd,$ButtonPostEnrollment,$LabelOfflineGroupWarning,$Output,$TextBoxYourName,$TextBoxTicketNumber))
+
+
+
+
+###########################################################################################
+# BUTTON FUNCTIONS
+###########################################################################################
+
+
+
+function Install-DuoProxy { 
+        
+        $YourName                  = $TextBoxYourName.Text
+        $TicketNumber              = $TextBoxTicketNumber.Text
+        
+                $Output.AppendText("PS $i>`r`n")
+                $Output.AppendText("PS $i> Logging - $YourName is to blame if something goes wrong...`r`n")
+                $Output.AppendText("PS $i> Logging - Please attach log file - Duo Deployment starting for $TicketNumber`r`n")
+                $Output.AppendText("PS $i> Step 1. Beginning install process`r`n")
+
+        $DownloadDuoProxy          = Invoke-WebRequest https://dl.duosecurity.com/duoauthproxy-latest.exe -Outfile c:\duoproxy.exe -Verbose 4>&1
+                
+                $Output.AppendText("PS $i> $DownloadDuoProxy`r`n")
+
+        $InstallDuoProxy           = Start-Process C:\duoproxy.exe /S -ErrorAction Inquire -ErrorAction Inquire -Verbose 4>&1
+                
+                $Output.AppendText("PS $i> $InstallDuoProxy`r`n")
+        
+        $DeletingDuoProxyInstaller = Remove-Item C:\duoproxy.exe -Force -ErrorAction Inquire -Verbose 4>&1
+                
+                $Output.AppendText("PS $i> $DeletingDuoProxyInstaller`r`n")
+                $Output.AppendText("PS $i> Step 1. Complete - Duo Proxy installation successful!`r`n")
+                            
+                            }
+
+
+function Configure-DuoProxy {
+    
+    $ProxyConfigFilePath = "C:\Program Files\Duo Security Authentication Proxy\log"
+    $Duo_HOST            = $TextBoxAPIHost.Text
+    $Duo_IKEY            = $TextBoxIKEY.Text
+    $Duo_SKEY            = $TextBoxSKey.Text
+        
+        $Output.AppendText("`r`n")
+        $Output.AppendText("PS $i> Step 2. Beginning configuring Duo proxy file authproxy.cfg`r`n")
+        $Output.AppendText("PS $i> Duo API Host set to $Duo_HOST`r`n")
+        $Output.AppendText("PS $i> Duo Integration Key set to $Duo_IKEY`r`n")
+        $Output.AppendText("PS $i> Duo Secret Key set to $Duo_SKEY`r`n")
+        $Output.AppendText("PS $i> Writing to Duo Proxy Configuration file at $ProxyConfigFilePath`r`n")
+        $Output.Text("PS $i> Sit tight, doing the fancy stuff now [||] - 5%")
+        $Output.Text("PS $i> Sit tight, doing the fancy stuff now [||||] - 14%")
+        $Output.Text("PS $i> Sit tight, doing the fancy stuff now [||||||] - 42%")
+        $Output.Text("PS $i> Sit tight, doing the fancy stuff now [||||||||||||] - 76%")
+        $Output.Text("PS $i> Sit tight, doing the fancy stuff now [|||||||||||||||||||] - 100%")
+
+
+                Set-Content -Path $ProxyConfigFilePath -Value "[cloud]" -Force -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "ikey=$Duo_IKEY" -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "skey=$Duo_SKEY" -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "api_host=$Duo_HOST" -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "; Uncomment the service_account_username and service_account_password lines if you are using NTLM or plain authentication." -Force -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "; Then, enter your Active Directory service account username and password in the spaces provided." -Force -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "; service_account_username=" -ErrorAction Inquire
+                Add-Content -Path $ProxyConfigFilePath -Value "; service_account_password=" -ErrorAction Inquire
+
+        $Output.AppendText("`r`n")
+        $Output.AppendText("PS $i> Duo API Host set to $Duo_HOST`r`n")
+        $Output.AppendText("PS $i> Duo Integration Key set to $Duo_IKEY`r`n")
+        $Output.AppendText("PS $i> Duo Secret Key set to $Duo_SKEY`r`n")
+        $StartProxyService = Get-Service | Where Name -Like *duo* | Start-Service -ErrorAction Inquire | Out-String
+        $Output.AppendText("PS $i> $StartProxyService`r`n")
+        $Output.AppendText("PS $i> Woohoo, Duo Proxy Confgiruation Successful!`r`n")
+
+        msg.exe * "Head back to the Duo Administration Web Console to confirm AD Sync is showing successful. Come back to me when you're done!"
+
+                                }
+
+
+function Gather-OnlineServers { 
+        
+
+        $Output.AppendText("PS $i> Gathering list of active Servers in Active Directory`r`n")
+            
+
+            $Servers                     = Get-ADComputer -Filter * -Properties * | Where OperatingSystem -Like *Server* | Where Enabled -EQ $true | Select Name,OperatingSystem,DNSHostName,DistinguishedName | Out-String
+            $ListActiveServers           = Get-ADComputer -Filter * -Properties * | Where OperatingSystem -Like *Server* | Where Enabled -EQ $true | Select DNSHostName | Out-String
+            
+            $ListViewOnlineServers.Lines.Clear()
+            $ListViewOnlineServers.AppendText("PS $i> $ListActiveServers`r`n")
+            $Output.AppendText("PS $i>The following Server Operating Systems were found in Active Directory - $Servers`r`n")
+            
+            
+                                }
+
+
+function Gather-OnlineWorkstations { 
+
+
+        $Output.AppendText("PS $i> Gathering list of active Workstations in Active Directory`r`n")
+        
+
+            $Workstations                 = Get-ADComputer -Filter * -Properties * | Where OperatingSystem -NotLike *Server* | Where Enabled -EQ $true | Select Name,OperatingSystem,DNSHostName,DistinguishedName | Out-String
+            $ListActiveWorkstations       = Get-ADComputer -Filter * -Properties * | Where OperatingSystem -NotLike *Server* | Where Enabled -EQ $true | Select DNSHostName | Out-String
+            
+            $ListViewOnlineWorkstations.Lines.Clear()
+            $ListViewOnlineWorkstations.AppendText("PS $i> $ListActiveWorkstations`r`n")
+            $Output.AppendText("PS $i>The following Non-Server Operating Systems were found in Active Directory - $WorkStations`r`n")
+            
+
+                                    }
+
+
+function Update-EmailAddresses 
+{
+
+            $EmailAddressOptions = $ListBoxEmailFormatOptions.SelectedValue
+            $EmailDomain         = $TextBoxEmailDomain
+            $Users               = Get-ADUser -Filter * -Properties * | Where Enabled -EQ $true
+            $ListUsers           = $Users | Out-String
+
+            $Output.AppendText("PS $i>The following Enabled Users were found in Active Directory - $ListUsers`r`n")
+
+        if ($EmailAddressOptions -eq "1-Cookie.Monster"){
+
+
+    ForEach ($user in $Users) { 
+            
+            $DisplayName          = $user.DisplayName
+            $First                = $($user.givenname)
+            $Last                 = $($user.surname)
+            $EmailAddress = $First + '.' + $Last + $EmailDomain
+        
+
+            $UserEmailUpdated     = Set-ADUser -Identity $user.samaccountname -EmailAddress $EmailAddress -Verbose 4>&1
+            $Output.AppendText("PS $i> $UserEmailUpdated`r`n")
+            $Output.AppendText("PS $i> User $DisplayName now set to $EmailAddress")
+
+                               }
+    
+                                                        }
+
+
+        if ($EmailAddressOptions -eq "2-CMonster"){
+
+    ForEach ($user in $Users) { 
+        
+            $DisplayName          = $user.DisplayName
+            $First                = $($user.givenname[0])
+            $Last                 = $($user.surname)
+            $EmailAddress = $First + $Last + $EmailDomain
+         
+
+            $UserEmailUpdated     = Set-ADUser -Identity $user.samaccountname -EmailAddress $EmailAddress -Verbose 4>&1
+            $Output.AppendText("PS $i> $UserEmailUpdated`r`n")
+            $Output.AppendText("PS $i> User $DisplayName now set to $EmailAddress")
+
+                                }
+                                                   }
+
+
+        if ($EmailAddressOptions -eq "3-Cookie"){
+
+    ForEach ($user in $Users){ 
+            
+            $DisplayName          = $user.DisplayName
+            $First                = $($user.givenname)
+            $EmailAddress         = $First + $EmailDomain
+        
+
+            $UserEmailUpdated     = Set-ADUser -Identity $user.samaccountname -EmailAddress $EmailAddress -Verbose 4>&1
+            $Output.AppendText("PS $i> $UserEmailUpdated`r`n")
+            $Output.AppendText("PS $i> User $DisplayName now set to $EmailAddress")
+
+                             }
+                                                 }
+
+        if ($EmailAddressOptions -eq "4-MonsterC"){
+
+    ForEach ($user in $Users){ 
+            
+            $DisplayName          = $user.DisplayName    
+            $First                = $($user.givenname[0])
+            $Last                 = $($user.surname)
+            $EmailAddress         = $Last + $First + $EmailDomain
+         
+
+            $UserEmailUpdated     = Set-ADUser -Identity $user.samaccountname -EmailAddress $EmailAddress -Verbose 4>&1
+            $Output.AppendText("PS $i> $UserEmailUpdated`r`n")
+            $Output.AppendText("PS $i> User $DisplayName now set to $EmailAddress")
+
+                              } 
+                                                   }
+
+}
+
+
+function Make-DuoGroupsAddOnlineUsers { 
+
+                
+                $Output.AppendText("PS $i> `r`n")
+
+            $GroupPath                 = $TextBoxDistNameGroups.Text
+            $Users                     = Get-ADUser -Filter * -Properties * | Where Enabled -EQ $true
+            $Identity                  = "CN=DUO Users,$GroupPath"
+
+            if ($GroupPath -eq $null){$Output.AppendText("PS $i> !!!ERROR!!! Distinguished name of Groups not provided!!!`r`n")}
+
+                
+            $MakeDuoOnlineGroup        = New-ADGroup -Name "DUO Users" -Path $GroupPath -GroupScope Universal -Description "Members of this group are synced in DUO" -Verbose 4>&1
+            $MakeDuoOfflineGroup       = New-ADGroup -Name "DUO Offline Users" -Path $GroupPath -GroupScope Universal -Description "Members of this group have offline access in DUO" -Verbose 4>&1
+
+                $Output.AppendText("PS $i> Duo Users Group created`r`n")
+                $Output.AppendText("PS $i> Duo Offline Users Group created`r`n")
+
+                
+foreach ($user in $users) {
+
+                $Output.AppendText("PS $i> `r`n")
+                $Output.AppendText("PS $i> Adding Enabled users to the Duo Users Group`r`n")
+                $Output.AppendText("PS $i> SKIPPING Duo Offline Users group until Enrollment Process completed.`r`n")
+
+            $Member                    = $User.distinguishedname
+            $AddDuoOnelineUsers        = Add-ADGroupMember -Identity $Identity -Members $Member -Verbose 4>&1
+            $Name                      = $user.DisplayName
+
+                $Output.AppendText("PS $i> $Name Add to Duo Users command completed`r`n")
+                $Output.AppendText("PS $i> $AddDuoOnelineUsers`r`n")
+
+                           }
+                                       }
+
+
+function Make-DuoOfflineUsers { 
+            
+                $Output.AppendText("PS $i> `r`n")
+
+            if ($GroupPath -eq $null){$Output.AppendText("PS $i> !!!ERROR!!! Distinguished name of Groups not provided!!!`r`n")}
+            $GroupPath                 = $TextBoxDistNameGroups.Text
+            $Identity                  = "CN=DUO Offline Users,$GroupPath"
+
+
+foreach ($user in $users) {
+
+            $Member                  = $User.distinguishedname
+            $Name                    = $user.DisplayName
+
+                Add-ADGroupMember -Identity $Identity -Members $Member
+                $Output.AppendText("PS $i> `r`n")
+                $Output.AppendText("PS $i> Hopefully you've completed the Enrollment Process`r`n")
+                $Output.AppendText("PS $i> `r`n")
+                $Output.AppendText("PS $i> Gathering users and adding to the Duo Offline Users Group`r`n")
+                $Output.AppendText("PS $i> Added $Name to $Identity`r`n")
+
+                            }
+                                }
+
+
+function Initiate-RickRoll {
+    
+                Start-Process "https://media3.giphy.com/media/LrmU6jXIjwziE/200.webp?cid=ecf05e47jgaz4mkv9i9kuzlbkm1kt1nb6jjwl1g5evludk9a&rid=200.webp&ct=g"
+            
+                            Start-Sleep -Seconds 5
+
+                Start-Process "http://hasthelargehadroncolliderdestroyedtheworldyet.com/"
+
+                            $Output.AppendText("PS $i> Nope, not today. :D`r`n")
+
+ }
+
+
+function Install-OnServers { 
+                
+                $Servers            = Get-AdComputers -Filter * -Properties * | Where OperatingSystem -Like *Server* | Where Enabled -EQ $true
+
+                            foreach ($Server in $Servers) {
+                            
+                            $Output.AppendText("PS $i> `r`n")
+                            $Output.AppendText("PS $i> Gathering all enabled servers in Active Directory`r`n")
+                            $Output.AppendText("PS $i> Testing connection to each for online status`r`n")
+                            
+                $Computer_Name       = $Server.Name
+
+                            $Output.AppendText("PS $i> `r`n")
+                            $Output.AppendText("PS $i> Get a drink... this may take a while, depending on how many devices there are...`r`n")
+
+                if (Test-Connection -ComputerName $Computer_Name -Quiet -Count 1 -OutVariable OnlineStatus) {  
+                            
+                            $Output.AppendText("PS $i> $Computer_Name online status equals - $OnlineStatus`r`n")
+                            
+
+                $Duo_HOST            = $TextBoxAPIHost.Text
+                $Duo_IKEY            = $TextBoxIKEY.Text
+                $Duo_SKEY            = $TextBoxSKey.Text
+
+                            $Output.AppendText("PS $i> Connecting to $Computer_Name, passing parameters for Duo client install`r`n")
+                            $Output.AppendText("PS $i> Duo Client keys for this install are - Host:$Duo_HOST Ikey:$Duo_IKEY Skey:$Duo_SKEY`r`n")
+
+                $Session             = New-PSSession -ComputerName $Computer_Name
+                $ConnectionState     = $Session.State
+
+                            $Output.AppendText("PS $i> Connection state to $Computer_Name is $ConnectionState `r`n")
+                            $Output.AppendText("PS $i> Invoking commands on $Computer_Name`r`n")
+
+                Invoke-Command -Session $Session -ScriptBlock {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12} -OutVariable Command1
+                Invoke-Command -Session $Session -ScriptBlock {Invoke-WebRequest -Uri 'https://dl.duosecurity.com/duo-win-login-latest.exe' -OutFile 'C:\Users\Public\Downloads\DUO.exe'} -OutVariable Command2
+                Invoke-Command -Session $Session -ArgumentList $Duo_IKEY, $Duo_SKEY, $Duo_HOST -ScriptBlock {param($Duo_IKEY, $Duo_SKEY, $Duo_HOST) C:\Users\Public\Downloads\duo.exe /S /V" /qn IKEY="$Duo_IKEY" SKEY="$Duo_SKEY" HOST="$Duo_HOST" AUTOPUSH="#0" FAILOPEN="#0""} -OutVariable Command3
+
+                            $Output.AppendText("PS $i> Invoked Command 1 results: $Command1 `r`n")
+                            $Output.AppendText("PS $i> Invoked Command 2 results: $Command2`r`n")
+                            $Output.AppendText("PS $i> Invoked Command 3 results: $Command3`r`n")
+
+                "Installing Duo authentication client on $Computer_Name"
+   
+   Remove-PSSession $Session
+
+                                                                                                              }
+
+                                                            }
+
+
+                              }
+
+
+function Install-OnWorkstation { 
+                
+                $Workstations            = Get-AdComputers -Filter * -Properties * | Where OperatingSystem -Like *Server* | Where Enabled -EQ $true
+
+                            foreach ($Workstation in $Workstations) {
+                            
+                            $Output.AppendText("PS $i> `r`n")
+                            $Output.AppendText("PS $i> Gathering all enabled workstations in Active Directory`r`n")
+                            $Output.AppendText("PS $i> Testing connection to each for online status`r`n")
+                            
+                $Computer_Name       = $Workstation.Name
+
+                            $Output.AppendText("PS $i> `r`n")
+                            $Output.AppendText("PS $i> Get a drink... this may take a while, depending on how many devices there are...`r`n")
+
+                if (Test-Connection -ComputerName $Computer_Name -Quiet -Count 1 -OutVariable OnlineStatus) {  
+                            
+                            $Output.AppendText("PS $i> $Computer_Name online status equals - $OnlineStatus`r`n")
+                            
+
+                $Duo_HOST            = $TextBoxAPIHost.Text
+                $Duo_IKEY            = $TextBoxIKEY.Text
+                $Duo_SKEY            = $TextBoxSKey.Text
+
+                            $Output.AppendText("PS $i> Connecting to $Computer_Name, passing parameters for Duo client install`r`n")
+                            $Output.AppendText("PS $i> Duo Client keys for this install are - Host:$Duo_HOST Ikey:$Duo_IKEY Skey:$Duo_SKEY`r`n")
+
+                $Session             = New-PSSession -ComputerName $Computer_Name
+                $ConnectionState     = $Session.State
+
+                            $Output.AppendText("PS $i> Connection state to $Computer_Name is $ConnectionState `r`n")
+                            $Output.AppendText("PS $i> Invoking commands on $Computer_Name`r`n")
+
+                Invoke-Command -Session $Session -ScriptBlock {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12} -OutVariable Command1
+                Invoke-Command -Session $Session -ScriptBlock {Invoke-WebRequest -Uri 'https://dl.duosecurity.com/duo-win-login-latest.exe' -OutFile 'C:\Users\Public\Downloads\DUO.exe'} -OutVariable Command2
+                Invoke-Command -Session $Session -ArgumentList $Duo_IKEY, $Duo_SKEY, $Duo_HOST -ScriptBlock {param($Duo_IKEY, $Duo_SKEY, $Duo_HOST) C:\Users\Public\Downloads\duo.exe /S /V" /qn IKEY="$Duo_IKEY" SKEY="$Duo_SKEY" HOST="$Duo_HOST" AUTOPUSH="#1" FAILOPEN="#0""} -OutVariable Command3
+
+                            $Output.AppendText("PS $i> Invoked Command 1 results: $Command1 `r`n")
+                            $Output.AppendText("PS $i> Invoked Command 2 results: $Command2`r`n")
+                            $Output.AppendText("PS $i> Invoked Command 3 results: $Command3`r`n")
+
+                "Installing Duo authentication client on $Computer_Name"
+ 
+    Remove-PSSession $Session
+
+                                                                                                                }
+                                                                    }
+                                }
+
+
+
+
+function Check-DuoGroups {
+
+    $Output.AppendText("PS $i> Gathering list of Duo Group Members`r`n")
+
+                $ListViewDuoUsers            = Get-ADGroupMember -Identity "Duo Users" | Select name | Out-String
+                $ListViewDuoGroupMembers.Lines.Clear()
+                $ListViewDuoGroupMembers.AppendText("PS $i> Duo Users List`r`n")
+                $ListViewDuoGroupMembers.AppendText("PS $i> $ListViewDuoUsers`r`n")
+
+                $ListViewDuoOfflineUsers     = Get-ADGroupMember -Identity "Duo Offline Users" | Select name | Out-String
+                $ListViewDuoGroupMembers.AppendText("PS $i> Duo Offline Users - Should be empty until post enrollment`r`n")
+                $ListViewDuoGroupMembers.AppendText("PS $i> Duo Offline Users List`r`n")
+                $ListViewDuoGroupMembers.AppendText("PS $i> $ListViewDuoOfflineUsers`r`n")
+
+
+                $ListViewDuoOfflineUsers     = Get-ADGroupMember -Identity "Duo Offline Users" | Out-String
+                $ListViewDuoUsers            = Get-ADGroupMember -Identity "Duo Users" | Out-String
+                $Output.AppendText("PS $i>The following are members of Duo Users Group - $ListViewDuoUsers`r`n")
+                $Output.AppendText("PS $i>The following are members of Duo Offline Users Group - $ListViewDuoOfflineUsers`r`n")
+
+
+}
+
+
+#######################################################################################
+# LOGIC SECTION
+#######################################################################################
+
+
+
+
+
+
+
+
+#######################################################################################
+# RUN GUI WITH OPTIONS
+#######################################################################################
+
+
+
+
+$Logging_FormStartedBY    = $env:USERNAME
+$Logging_FormRanON        = $env:COMPUTERNAME
+$Output.AppendText("PS $i> Output results will be shown here.....`r`n" )
+$Output.AppendText("PS $i> Duo Setup Tool Started on $Date :: By $Logging_FormStartedBY on $Logging_FormRanON`r`n")
+
+
+
+
+Add-Type -AssemblyName System.Windows.Forms
+
+
+
+$FormDuoSetupTool.Add_Closing({param($sender,$e)
+    $result = [System.Windows.Forms.MessageBox]::Show(`
+    
+        "Are you sure you want to exit?", `
+        "Duo Setup Tool", [System.Windows.Forms.MessageBoxButtons]::YesNoCancel)
+    
+    if ($result -ne [System.Windows.Forms.DialogResult]::Yes)
+    
+    {
+        $e.Cancel= $true
+    }
+    
+    if ($result -eq [System.Windows.Forms.DialogResult]::Yes)
+    
+    {
+            $TicketNumber       = $TextBoxTicketNumber.Text
+            $YourName           = $TextBoxYourName.Text
+        msg.exe * "Duo Setuo log file saved to C:\ - By $YourName for Ticket\Project# $TicketNumber"
+    }
+})
+
+
+$LogOutputLines = $Output.Lines | Out-File C:\DuoSetupTool.log -Append -Force
+
+
+[void]$FormDuoSetupTool.ShowDialog()
+[void]$FormDuoSetupTool.Close()
+
+
+$LogOutputLines = $Output.Lines | Out-File C:\DuoSetupTool.log -Append -Force
+
