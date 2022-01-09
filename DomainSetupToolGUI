@@ -5,9 +5,12 @@ function Run-DuoSetupTool {
     Duo Setup Tool - JM 12/24/2021
 #>
 
-
 $Date                                     = Get-Date
-
+$CheckEvent = Get-EventLog -LogName Application -Source *ScreenConnect* -Newest 1 -EntryType Information -ErrorAction SilentlyContinue
+$CheckEvent | Select-Object -Property * -ErrorAction SilentlyContinue
+$GetEventProperties = $CheckEvent | Select-Object -Property * -ErrorAction SilentlyContinue
+$CleanupMessage = $GetEventProperties.Message
+$ConnectWiseUser = $CleanupMessage.replace(' Connected','')
 
 
 #######################################################################################################
@@ -961,13 +964,6 @@ $FormDuoSetupTool.Add_Closing({param($sender,$e)
 
 
 $LogOutputLines = $Output.Lines | Out-File C:\DuoSetupTool.log -Append -Force
-
-$CheckEvent = Get-EventLog -LogName Application -Source *ScreenConnect* -Newest 1 -EntryType Information
-$CheckEvent | Select-Object -Property *
-$GetEventProperties = $CheckEvent | Select-Object -Property *
-$CleanupMessage = $GetEventProperties.Message
-$ConnectWiseUser = $CleanupMessage.replace(' Connected','')
-
 
 [void]$FormDuoSetupTool.ShowDialog()
 [void]$FormDuoSetupTool.Close()
