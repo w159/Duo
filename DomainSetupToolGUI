@@ -1,6 +1,6 @@
 <# 
 .NAME
-    Duo Setup Tool - JM 1/4/2022
+    Duo Setup Tool - JM 12/24/2021
 #>
 
 
@@ -588,6 +588,12 @@ function Configure-DuoProxy {
         $Output.AppendText("PS $i> Woohoo, Duo Proxy Confgiruation Successful!`r`n")
 
         msg.exe * "Head back to the Duo Administration Web Console to confirm AD Sync is showing successful. Come back to me when you're done!"
+
+        $TextBoxAPIHost.Clear();
+        $TextBoxIKEY.Clear();
+        $TextBoxSKey.Clear();
+
+        $Output.AppendText("PS $i>DUO KEYS CLEARED - UPDATE THEM TO THE APPLICATION KEYS NOW!")
 
                                 }
 
