@@ -1,3 +1,5 @@
+function Run-DuoSetupTool {
+
 <# 
 .NAME
     Duo Setup Tool - JM 12/24/2021
@@ -980,3 +982,4 @@ $LogOutputLines = $Output.Lines | Out-File C:\DuoSetupTool.log -Append -Force
 
 $LogOutputLines = $Output.Lines | Out-File C:\DuoSetupTool.log -Append -Force
 
+}
