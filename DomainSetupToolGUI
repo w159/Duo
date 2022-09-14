@@ -476,7 +476,7 @@ $ToolTipGetToWork.isBalloon        = $true
 
 
 $ToolTipGroupOU                    = New-Object system.Windows.Forms.ToolTip
-$ToolTipGroupOU.ToolTipTitle       = "Example - DC=AegisBizTech,DC=COM"
+$ToolTipGroupOU.ToolTipTitle       = "Example - DC=Domain,DC=COM"
 $ToolTipGroupOU.isBalloon          = $true
 $ToolTipGroupOU.AutomaticDelay     = 100
 $ToolTipGroupOU.AutoPopDelay       = 20000
